@@ -1,3 +1,48 @@
 @import 'tailwindcss/base';
 @import 'tailwindcss/components';
-@import 'tailwindcss/utilities'
+@import 'tailwindcss/utilities';
+@import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap');
+
+body, html {
+    color: #fafafa;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+}
+
+html {
+    background: #18181b;
+    font-family: "Courier Prime", serif;
+    font-weight: 400;
+    font-style: normal;
+}
+
+body {
+    background: url("$lib/dots.svg");
+    background-size: 100px;
+    animation: dots_move_up 5s infinite linear;
+}
+  
+.f-bold {
+    font-family: "Courier Prime", serif;
+    font-weight: 700;
+    font-style: normal;
+}
+
+.source {
+    font-family: "Source Code Pro", serif;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-style: normal;
+  }
+  
+  
+
+@keyframes dots_move_up {
+    0% {
+        background-position: 0 0;
+    }
+    100% {
+        background-position: 0 100px;
+    }
+}
