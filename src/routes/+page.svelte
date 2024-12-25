@@ -11,7 +11,7 @@
 
   async function runAI(question: string) {
     error = "";
-    
+
     if (question.length < 1) return;
     if (question.length > 800) {
       error = "Question is too long.";
