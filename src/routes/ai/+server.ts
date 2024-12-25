@@ -50,33 +50,33 @@ A: Fuck you.
 const AI_MODEL = "gemma2-9b-it";
 
 export const POST: RequestHandler = async ({ request }) => {
-  let { question } = await request.json();
-  const groq = new Groq({
-    apiKey: AI_KEY
-  });
-  
   try {
-    let result = await groq.chat.completions.create({
-        messages: [
-        {
-            role: "system",
-            content: AI_PROMPT,
-        },
-        {
-            role: "user",
-            content: question,
-        },
-        ],
-        model: AI_MODEL,
-        temperature: 0.5,
-        max_tokens: 256,
-        top_p: 1,
-        stop: null,
-        stream: false,
+    let { question } = await request.json();
+    const groq = new Groq({
+      apiKey: AI_KEY,
     });
 
-    return json({ result: result, success: true});
+    let result = await groq.chat.completions.create({
+      messages: [
+        {
+          role: "system",
+          content: AI_PROMPT,
+        },
+        {
+          role: "user",
+          content: question,
+        },
+      ],
+      model: AI_MODEL,
+      temperature: 0.5,
+      max_tokens: 256,
+      top_p: 1,
+      stop: null,
+      stream: false,
+    });
+
+    return json({ result: result, success: true });
   } catch (e) {
-    return json({ error: JSON.stringify(e), success: false });
+    return json({ error: JSON.stringify(e)?.replace(AI_KEY || "", "[ REDACTED ]"), success: false });
   }
 };
