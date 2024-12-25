@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Cap from "$lib/Cap.png";
+  import Cap from "$lib/cap.png";
   import { fade, blur } from "svelte/transition";
   import { DotLottieSvelte } from "@lottiefiles/dotlottie-svelte";
 
