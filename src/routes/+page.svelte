@@ -9,6 +9,7 @@
   let AIResponseTimer: any;
   let error: string | boolean = $state(false);
   let response: string = $state("");
+  let restore_question = "";
 
   async function runAI(question: string) {
     error = "";
@@ -20,6 +21,8 @@
     }
 
     AIResponseTime = 0;
+    restore_question = question;
+    question = "";
     content = "loading";
     AIResponseTimer = setInterval(() => {
       AIResponseTime++;
@@ -40,11 +43,11 @@
       content = "";
       error = data.error;
       console.error(data.error);
-      
+      question = restore_question;
+
       return;
     }
 
-    question = "";
     response = data.result;
     content = "response";
   }

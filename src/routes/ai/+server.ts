@@ -86,7 +86,7 @@ export const POST: RequestHandler = async ({ request, getClientAddress }) => {
 
     if (await ratelimit(ip)) {
       return json({
-        error: "You are ratelimited, please wait a minute before continuing",
+        error: "You are ratelimited, please wait a few seconds before continuing",
         success: false,
       });
     }
