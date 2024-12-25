@@ -26,6 +26,7 @@
 		"@lottiefiles/dotlottie-svelte": "^0.4.3",
 		"dotenv": "^16.4.7",
 		"groq-sdk": "^0.9.1",
+		"ioredis": "^5.4.2",
 		"lru-cache": "^11.0.2"
 	}
 }

@@ -44,7 +44,7 @@
       return;
     }
 
-    console.log(data);
+    question = "";
     response = data.result;
     content = "response";
   }
