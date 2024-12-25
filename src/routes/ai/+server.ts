@@ -2,6 +2,7 @@ import { error, json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
 import Groq from "groq-sdk";
 import "dotenv/config";
+import { LRUCache } from 'lru-cache'
 
 const AI_KEY = process.env.GROQ_API_KEY;
 
@@ -55,9 +56,39 @@ A: Im in the thick of it everybody knows
 
 const AI_MODEL = "gemma2-9b-it";
 
-export const POST: RequestHandler = async ({ request }) => {
+// BROKEN RATELIMIT FUNCTION
+
+function ratelimit(userIP: string) {
+  // Use lru-cache to ratelimit
+  const REQUESTS_PER_MINUTE = 4;
+
+  const tokenCache = new LRUCache({
+    max: 500,
+    ttl: 1000 * 60
+  });
+
+  const IPCount = tokenCache.get(userIP) as number || 0;
+  if (IPCount > REQUESTS_PER_MINUTE) {
+    return true;
+  } else {
+    tokenCache.set(userIP, IPCount + 1);
+    return false;
+  }
+}
+
+export const POST: RequestHandler = async ({ request, getClientAddress }) => {
   try {
-    let { question } = await request.json();
+    let { question, debug } = await request.json();
+    let ip = getClientAddress();
+
+    if (ratelimit(ip)) {
+      return json({ error: "You are ratelimited, please wait a minute before continuing", success: false });
+    }
+
+    if (debug) {
+      return json({ error: "Debug request went through", success: false });
+    }
+
     const groq = new Groq({
       apiKey: AI_KEY,
     });
@@ -83,6 +114,6 @@ export const POST: RequestHandler = async ({ request }) => {
 
     return json({ result: result.choices[0].message.content, success: true });
   } catch (e) {
-    return json({ error: JSON.stringify(e)?.replace(AI_KEY || "", "[ REDACTED ]"), success: false });
+    return json({ error: JSON.stringify(e)?.replace(AI_KEY || "API_KEY", "[ REDACTED ]"), success: false });
   }
 };

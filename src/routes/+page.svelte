@@ -30,7 +30,7 @@
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ question }),
+      body: JSON.stringify({ question, debug: false }),
     });
 
     const data = await fresponse.json();
