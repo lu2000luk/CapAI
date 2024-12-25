@@ -120,7 +120,6 @@
       <button
         class="py-1 rounded px-4 bg-white text-black mt-4"
         transition:fade
-        onclick={() => (content = "")}
       >
         Back
       </button>
