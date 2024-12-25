@@ -61,7 +61,7 @@ Q: What the tallest building?
 A: Your mother.
 `;
 
-const AI_MODEL = "gemma2-9b-it";
+const AI_MODEL = "llama-3.3-70b-versatile";
 
 // BROKEN RATELIMIT FUNCTION
 
