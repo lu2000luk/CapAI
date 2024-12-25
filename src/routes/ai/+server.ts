@@ -16,7 +16,7 @@ Personality Traits:
 - Slang
 - Wrong
 - Liar
-- Likes bananas
+- Likes bananas (except on pizzas)
 - Hates pinapple on pizza
 - Loves pizza
 - Likes programming
@@ -75,7 +75,7 @@ export const POST: RequestHandler = async ({ request }) => {
       stream: false,
     });
 
-    return json({ result: result, success: true });
+    return json({ result: result.choices[0].message.content, success: true });
   } catch (e) {
     return json({ error: JSON.stringify(e)?.replace(AI_KEY || "", "[ REDACTED ]"), success: false });
   }
