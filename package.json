@@ -23,6 +23,8 @@
 		"vite": "^5.0.3"
 	},
 	"dependencies": {
-		"@lottiefiles/dotlottie-svelte": "^0.4.3"
+		"@lottiefiles/dotlottie-svelte": "^0.4.3",
+		"dotenv": "^16.4.7",
+		"groq-sdk": "^0.9.1"
 	}
 }
