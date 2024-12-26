@@ -9,6 +9,7 @@
   let AIResponseTimer: any;
   let error: string | boolean = $state(false);
   let response: string = $state("");
+  let final_response = "";
 
   async function runAI(question: string) {
     error = "";
@@ -44,8 +45,24 @@
       return;
     }
 
-    response = data.result;
+    final_response = data.result;
+    response = "";
+    response_typewriter();
     content = "response";
+  }
+
+  function response_typewriter() {
+    const TIME_LETTER = 15;
+
+    let i = 0;
+    const interval = setInterval(() => {
+      response += final_response[i];
+      i++;
+
+      if (i === final_response.length) {
+        clearInterval(interval);
+      }
+    }, TIME_LETTER);
   }
 </script>
 
