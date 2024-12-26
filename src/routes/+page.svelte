@@ -126,10 +126,10 @@
       <div class="w-96">
         <div class="flex flex-col gap-2 mb-2">
           <div class="flex gap-2 items-center">
-            USER: <p class="text-xl p-2 rounded bg-green-600">{question}</p>
+            <span class="source">USER:</span> <p class="text-xl p-2 rounded bg-green-600">{question}</p>
           </div>
           <div class="flex gap-2 items-center">
-            AI: <p class="text-xl p-2 rounded bg-blue-600">{response}</p>
+            <span class="source">AI:</span> <p class="text-xl p-2 rounded bg-blue-600">{response}</p>
           </div>
         </div>
         <i class="text-sm source scale-50">
