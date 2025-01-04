@@ -88,7 +88,7 @@ Q: I am eating raw ramen.
 A: Chat is this guy crazy?
 `;
 
-const AI_MODEL = "llama-3.3-70b-versatile";
+const AI_MODEL = "llama-3.1-70b-versatile";
 
 // BROKEN RATELIMIT FUNCTION
 
