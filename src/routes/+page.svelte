@@ -113,6 +113,7 @@
     if (data.error) {
       conv_error = data.error;
       console.error(data.error);
+      conv_loading = false;
       return;
     }
 
@@ -121,6 +122,12 @@
 
     conv_loading = false;
     conv_input = "";
+  }
+
+  function scrollToLastMessage() {
+    const messages = document.querySelectorAll(".message");
+    const lastMessage = messages[messages.length - 1];
+    lastMessage.scrollIntoView({ behavior: "smooth" });
   }
 </script>
 
@@ -188,21 +195,21 @@
       </div>
     {:else if content === "response"}
       <div class="w-full">
-        <div class="flex flex-col w-full gap-1 mb-2">
+        <div class="flex flex-col w-full gap-2 mb-2 max-h-80 overflow-y-auto">
           {#each conversation as message}
             {#if message.user}
-              <div class="flex gap-2 items-center justify-end">
-                <p class="text-xl p-2 rounded bg-green-600">{message.message}</p>
+              <div class="flex gap-2 items-center justify-end message">
+                <p class="text-xl py-1 px-2 rounded bg-green-600">{message.message}</p>
                 <span class="source">
                   <img src={User} alt="USER" class="w-8 h-8" />
                 </span>
               </div>
             {:else}
-              <div class="flex gap-2 items-center justify-start">
+              <div class="flex gap-2 items-center justify-start message">
                 <span class="source">
                   <img src={Cap} alt="AI" class="w-8 h-8" />
                 </span>
-                <p class="text-xl p-2 rounded bg-blue-600">{message.message}</p>
+                <p class="text-xl py-1 px-2 rounded bg-blue-600">{message.message}</p>
               </div>
             {/if}
           {/each}
@@ -212,16 +219,18 @@
         </i>
       </div>
 
+      {#if conv_error} 
+        <div class="p-2 rounded bg-red-700">
+          Error: {conv_error}
+        </div>
+      {/if}
+
       <div class="flex justify-between gap-0 mt-4 items-center">
         {#if conv_loading}
-          <DotLottieSvelte
-            src="../CapAIConversationLoading.json"
-            speed={0.5}
-            mode="reverse-bounce"
-            useFrameInterpolation
-            loop
-            autoplay
-          />
+          <div class="w-full p-3 flex justify-center items-center gap-2 source rounded-full bg-gradient-to-tr to-blue-600 from-blue-800 shadow" transition:blur>
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g stroke="currentColor"><circle cx="12" cy="12" r="9.5" fill="none" stroke-linecap="round" stroke-width="3"><animate attributeName="stroke-dasharray" calcMode="spline" dur="1.5s" keySplines="0.42,0,0.58,1;0.42,0,0.58,1;0.42,0,0.58,1" keyTimes="0;0.475;0.95;1" repeatCount="indefinite" values="0 150;42 150;42 150;42 150"/><animate attributeName="stroke-dashoffset" calcMode="spline" dur="1.5s" keySplines="0.42,0,0.58,1;0.42,0,0.58,1;0.42,0,0.58,1" keyTimes="0;0.475;0.95;1" repeatCount="indefinite" values="0;-16;-59;-59"/></circle><animateTransform attributeName="transform" dur="2s" repeatCount="indefinite" type="rotate" values="0 12 12;360 12 12"/></g></svg>
+            <span>Loading...</span>
+          </div>
         {:else}
           {#if conv_input.length < 1 && !conv_input_focus}
             <button
@@ -278,7 +287,11 @@
             placeholder="Continue conversation..."
             onkeydown={(event) => {
               if (event.key === "Enter") {
-                advance(conv_input, conversation);
+                conv_loading = true;
+
+                setTimeout(() => {
+                  advance(conv_input, conversation);
+                }, 1000);
               }
             }}
             onfocus={() => (conv_input_focus = true)}
@@ -287,7 +300,14 @@
 
           {#if conv_input.length > 0 || conv_input_focus}
             <button
-              class="py-2 px-5 rounded-full bg-white text-black flex gap-2 items-center rounded-l-none transition-all duration-200 hover:bg-opacity-75"
+              class="py-2 px-5 rounded-full bg-white text-black flex gap-2 items-center rounded-l-none transition-all duration-200 hover:bg-opacity-75 source"
+              onclick={() => {
+                    conv_loading = true;
+
+                    setTimeout(() => {
+                      advance(conv_input, conversation)
+                    }, 1000);
+                }}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
