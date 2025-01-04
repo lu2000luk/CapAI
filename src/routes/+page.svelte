@@ -88,7 +88,7 @@
   async function advance(message: string, conversation: Message[]) {
     if (message.length < 1) return;
 
-    if (conversation.length > 10) {
+    if (conversation.length > 15) {
       conversation.shift();
     };
 
