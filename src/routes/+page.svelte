@@ -120,6 +120,10 @@
     add_user_message(message);
     add_ai_message(data.result);
 
+    setTimeout(() => {
+      scrollToLastMessage();
+    }, 100);
+
     conv_loading = false;
     conv_input = "";
   }
@@ -130,6 +134,21 @@
     lastMessage.scrollIntoView({ behavior: "smooth" });
   }
 </script>
+
+<style>
+  .scrollbar::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .scrollbar::-webkit-scrollbar-thumb {
+    background-color: #2563eb;
+    border-radius: 999px;
+  }
+
+  .scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+</style>
 
 <div class="app w-full h-full flex items-center justify-center">
   <div
@@ -195,7 +214,7 @@
       </div>
     {:else if content === "response"}
       <div class="w-full">
-        <div class="flex flex-col w-full gap-2 mb-2 max-h-80 overflow-y-auto">
+        <div class="flex flex-col w-full gap-2 mb-2 p-1 max-h-60 overflow-y-auto scrollbar">
           {#each conversation as message}
             {#if message.user}
               <div class="flex gap-2 items-center justify-end message">
@@ -291,7 +310,7 @@
 
                 setTimeout(() => {
                   advance(conv_input, conversation);
-                }, 1000);
+                }, 600);
               }
             }}
             onfocus={() => (conv_input_focus = true)}
@@ -306,7 +325,7 @@
 
                     setTimeout(() => {
                       advance(conv_input, conversation)
-                    }, 1000);
+                    }, 600);
                 }}
             >
               <svg
