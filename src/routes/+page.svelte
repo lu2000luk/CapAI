@@ -17,7 +17,7 @@
   let response: string = $state("");
   let final_response = "";
 
-  let conversation: Message[] = [];
+  let conversation: Message[] = $state([]);
   let conv_loading = $state(false);
   let conv_error: string | boolean = $state(false);
   let conv_input = $state("");
@@ -74,22 +74,7 @@
     add_user_message(question);
     add_ai_message(final_response);
 
-    response_typewriter();
     content = "response";
-  }
-
-  function response_typewriter() {
-    const TIME_LETTER = 15;
-
-    let i = 0;
-    const interval = setInterval(() => {
-      response += final_response[i];
-      i++;
-
-      if (i === final_response.length) {
-        clearInterval(interval);
-      }
-    }, TIME_LETTER);
   }
 
   function add_user_message(message: string) {
@@ -100,7 +85,43 @@
     conversation.push({ message, user: false });
   }
 
-  async function advance(message: string, conversation: Message[]) {}
+  async function advance(message: string, conversation: Message[]) {
+    if (message.length < 1) return;
+
+    if (conversation.length > 10) {
+      conversation.shift();
+    };
+
+    if (message.length > 800) {
+      conv_error = "Message is too long.";
+      return;
+    }
+
+    conv_loading = true;
+    conv_error = false;
+
+    const fresponse = await fetch(`/ai`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ question: message, debug: false, conversation }),
+    });
+
+    const data = await fresponse.json();
+
+    if (data.error) {
+      conv_error = data.error;
+      console.error(data.error);
+      return;
+    }
+
+    add_user_message(message);
+    add_ai_message(data.result);
+
+    conv_loading = false;
+    conv_input = "";
+  }
 </script>
 
 <div class="app w-full h-full flex items-center justify-center">
@@ -167,19 +188,24 @@
       </div>
     {:else if content === "response"}
       <div class="w-full">
-        <div class="flex flex-col w-full gap-2 mb-2">
-          <div class="flex gap-2 items-center justify-end">
-            <p class="text-xl p-2 rounded bg-green-600">{question}</p>
-            <span class="source">
-              <img src={User} alt="USER" class="w-8 h-8" />
-            </span>
-          </div>
-          <div class="flex gap-2 items-center justify-start">
-            <span class="source">
-              <img src={Cap} alt="AI" class="w-8 h-8" />
-            </span>
-            <p class="text-xl p-2 rounded bg-blue-600">{response}</p>
-          </div>
+        <div class="flex flex-col w-full gap-1 mb-2">
+          {#each conversation as message}
+            {#if message.user}
+              <div class="flex gap-2 items-center justify-end">
+                <p class="text-xl p-2 rounded bg-green-600">{message.message}</p>
+                <span class="source">
+                  <img src={User} alt="USER" class="w-8 h-8" />
+                </span>
+              </div>
+            {:else}
+              <div class="flex gap-2 items-center justify-start">
+                <span class="source">
+                  <img src={Cap} alt="AI" class="w-8 h-8" />
+                </span>
+                <p class="text-xl p-2 rounded bg-blue-600">{message.message}</p>
+              </div>
+            {/if}
+          {/each}
         </div>
         <i class="text-sm source scale-50">
           ⚠️ Do not act upon the AI's response
