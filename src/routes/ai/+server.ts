@@ -56,7 +56,7 @@ const AI_MODEL = "llama-3.3-70b-versatile";
 
 async function ratelimit(userIP: string) {
   // Use Redis/Valkey DB to ratelimit
-  const REQUESTS_PER_MINUTE = 4;
+  const REQUESTS_PER_MINUTE = 5;
   const ratelimitdb = new Valkey(DB_URI);
 
   let limitKey = await ratelimitdb.set(
@@ -84,11 +84,12 @@ export const POST: RequestHandler = async ({ request, getClientAddress }) => {
         error:
           "You are ratelimited, please wait a few seconds before continuing",
         success: false,
+        ratelimited: true
       });
     }
 
     if (debug) {
-      return json({ error: "Debug request went through", success: false });
+      return json({ error: "Debug request hit the server", success: false, ratelimited: false });
     }
 
     const groq = new Groq({
@@ -114,11 +115,12 @@ export const POST: RequestHandler = async ({ request, getClientAddress }) => {
       stream: false,
     });
 
-    return json({ result: result.choices[0].message.content, success: true });
+    return json({ result: result.choices[0].message.content, success: true, ratelimited: false });
   } catch (e) {
     return json({
       error: JSON.stringify(e)?.replace(AI_KEY || "API_KEY", "[ REDACTED ]"),
       success: false,
+      ratelimited: false,
     });
   }
 };

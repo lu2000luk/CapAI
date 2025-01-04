@@ -2,6 +2,7 @@
   import Cap from "$lib/cap.png";
   import { fade, blur } from "svelte/transition";
   import { DotLottieSvelte } from "@lottiefiles/dotlottie-svelte";
+  import { run } from "svelte/legacy";
 
   let question = $state("");
   let content = $state("");
@@ -11,8 +12,11 @@
   let response: string = $state("");
   let final_response = "";
 
-  async function runAI(question: string) {
+  let ratelimit_loading = $state(false);
+
+  async function runAI(question: string, retry = false) {
     error = "";
+    if (retry) ratelimit_loading = false;
 
     if (question.length < 1) return;
     if (question.length > 800) {
@@ -36,6 +40,14 @@
 
     const data = await fresponse.json();
     clearInterval(AIResponseTimer);
+
+    if (data.ratelimited && !data.success) {
+      if (!retry) {
+        ratelimit_loading = true;
+        setTimeout(() => runAI(question, true), (60 / 5) * 1000);
+        return;
+      }
+    }
 
     if (data.error) {
       content = "";
@@ -110,6 +122,11 @@
       </div>
     {:else if content === "loading"}
       <div class="flex flex-col items-center" transition:blur>
+        {#if ratelimit_loading}
+          <p class="source text-sm p-1 rounded bg-red-700">
+            ❕ Your request has been slowed down to prevent abuse.
+          </p>
+        {/if}
         <p class="source">{Math.round(AIResponseTime / 100)}s</p>
         <DotLottieSvelte
           src="../CapAILoading.json"
