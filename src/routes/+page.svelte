@@ -1,8 +1,13 @@
 <script lang="ts">
   import Cap from "$lib/cap.png";
+  import User from "$lib/user.png";
   import { fade, blur } from "svelte/transition";
   import { DotLottieSvelte } from "@lottiefiles/dotlottie-svelte";
-  import { run } from "svelte/legacy";
+
+  type Message = {
+    message: string;
+    user: boolean;
+  };
 
   let question = $state("");
   let content = $state("");
@@ -11,6 +16,12 @@
   let error: string | boolean = $state(false);
   let response: string = $state("");
   let final_response = "";
+
+  let conversation: Message[] = [];
+  let conv_loading = $state(false);
+  let conv_error: string | boolean = $state(false);
+  let conv_input = $state("");
+  let conv_input_focus = $state(false);
 
   let ratelimit_loading = $state(false);
 
@@ -44,7 +55,7 @@
     if (data.ratelimited && !data.success) {
       if (!retry) {
         ratelimit_loading = true;
-        setTimeout(() => runAI(question, true), (60 / 5) * 1000);
+        setTimeout(() => runAI(question, true), 8000);
         return;
       }
     }
@@ -59,6 +70,10 @@
 
     final_response = data.result;
     response = "";
+
+    add_user_message(question);
+    add_ai_message(final_response);
+
     response_typewriter();
     content = "response";
   }
@@ -76,6 +91,16 @@
       }
     }, TIME_LETTER);
   }
+
+  function add_user_message(message: string) {
+    conversation.push({ message, user: true });
+  }
+
+  function add_ai_message(message: string) {
+    conversation.push({ message, user: false });
+  }
+
+  async function advance(message: string, conversation: Message[]) {}
 </script>
 
 <div class="app w-full h-full flex items-center justify-center">
@@ -92,7 +117,8 @@
     {#if content === "what"}
       <div class="flex flex-col items-center">
         <p class="source">
-          CapAI is an AI that answers any question <b>wrong</b>.
+          CapAI is an AI that answers any question in a funny and mostly wrong
+          way.
         </p>
 
         <button
@@ -140,61 +166,138 @@
         <p class="source text-sm">Loading animation made by lu2000luk</p>
       </div>
     {:else if content === "response"}
-      <div class="w-96">
-        <div class="flex flex-col gap-2 mb-2">
-          <div class="flex gap-2 items-center">
-            <span class="source">USER:</span> <p class="text-xl p-2 rounded bg-green-600">{question}</p>
+      <div class="w-full">
+        <div class="flex flex-col w-full gap-2 mb-2">
+          <div class="flex gap-2 items-center justify-end">
+            <p class="text-xl p-2 rounded bg-green-600">{question}</p>
+            <span class="source">
+              <img src={User} alt="USER" class="w-8 h-8" />
+            </span>
           </div>
-          <div class="flex gap-2 items-center">
-            <span class="source">AI:</span> <p class="text-xl p-2 rounded bg-blue-600">{response}</p>
+          <div class="flex gap-2 items-center justify-start">
+            <span class="source">
+              <img src={Cap} alt="AI" class="w-8 h-8" />
+            </span>
+            <p class="text-xl p-2 rounded bg-blue-600">{response}</p>
           </div>
         </div>
         <i class="text-sm source scale-50">
           ⚠️ Do not act upon the AI's response
         </i>
       </div>
-      <button
-        class="py-1 rounded pr-8 pl-4 bg-white text-black mt-4 flex gap-2 items-center"
-        transition:fade
-        onclick={() => {
-          content = "";
-          question = "";
-        }}
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="32"
-          height="32"
-          viewBox="0 0 24 24"
-          class="scale-75"
-          ><g
-            fill="none"
-            stroke="currentColor"
-            stroke-dasharray="12"
-            stroke-dashoffset="12"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            ><path d="M5 12l7 -7M5 12l7 7"
-              ><animate
-                fill="freeze"
-                attributeName="stroke-dashoffset"
-                dur="0.3s"
-                values="12;0"
-              /></path
-            ><path d="M11 12l7 -7M11 12l7 7"
-              ><animate
-                fill="freeze"
-                attributeName="stroke-dashoffset"
-                begin="0.3s"
-                dur="0.3s"
-                values="12;0"
-              /></path
-            ></g
-          ></svg
-        >
-        Back
-      </button>
+
+      <div class="flex justify-between gap-0 mt-4 items-center">
+        {#if conv_loading}
+          <DotLottieSvelte
+            src="../CapAIConversationLoading.json"
+            speed={0.5}
+            mode="reverse-bounce"
+            useFrameInterpolation
+            loop
+            autoplay
+          />
+        {:else}
+          {#if conv_input.length < 1 && !conv_input_focus}
+            <button
+              class="py-2 rounded-full pr-8 pl-4 mr-2 bg-white text-black flex gap-2 items-center transition-all duration-200 hover:bg-opacity-75"
+              transition:blur
+              onclick={() => {
+                content = "";
+                question = "";
+                conversation = [];
+              }}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="32"
+                height="32"
+                viewBox="0 0 24 24"
+                class="scale-75"
+                ><g
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-dasharray="12"
+                  stroke-dashoffset="12"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  ><path d="M5 12l7 -7M5 12l7 7"
+                    ><animate
+                      fill="freeze"
+                      attributeName="stroke-dashoffset"
+                      dur="0.3s"
+                      values="12;0"
+                    /></path
+                  ><path d="M11 12l7 -7M11 12l7 7"
+                    ><animate
+                      fill="freeze"
+                      attributeName="stroke-dashoffset"
+                      begin="0.3s"
+                      dur="0.3s"
+                      values="12;0"
+                    /></path
+                  ></g
+                ></svg
+              >
+              Back
+            </button>
+          {/if}
+          <input
+            type="text"
+            bind:value={conv_input}
+            class="continueConversation focus:outline-none ring-0 outline-none w-full py-3 px-4 border-none bg-[#27272a] rounded-full caret-slate-300 text-white focus:ring-0 source"
+            style={conv_input.length > 0 || conv_input_focus
+              ? "border-radius: 999px 0 0 999px"
+              : ""}
+            placeholder="Continue conversation..."
+            onkeydown={(event) => {
+              if (event.key === "Enter") {
+                advance(conv_input, conversation);
+              }
+            }}
+            onfocus={() => (conv_input_focus = true)}
+            onblur={() => (conv_input_focus = false)}
+          />
+
+          {#if conv_input.length > 0 || conv_input_focus}
+            <button
+              class="py-2 px-5 rounded-full bg-white text-black flex gap-2 items-center rounded-l-none transition-all duration-200 hover:bg-opacity-75"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="32"
+                height="32"
+                viewBox="0 0 24 24"
+                ><g
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-dasharray="12"
+                  stroke-dashoffset="12"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  ><path d="M19 12l-7 -7M19 12l-7 7"
+                    ><animate
+                      fill="freeze"
+                      attributeName="stroke-dashoffset"
+                      dur="0.3s"
+                      values="12;0"
+                    /></path
+                  ><path d="M13 12l-7 -7M13 12l-7 7"
+                    ><animate
+                      fill="freeze"
+                      attributeName="stroke-dashoffset"
+                      begin="0.3s"
+                      dur="0.3s"
+                      values="12;0"
+                    /></path
+                  ></g
+                ></svg
+              >
+            </button>
+          {/if}
+        {/if}
+      </div>
     {:else}
       {#if error}
         <div class="p-5 flex flex-col bg-red-800 mb-5 rounded" transition:fade>

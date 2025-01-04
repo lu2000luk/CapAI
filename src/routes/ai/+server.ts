@@ -3,6 +3,7 @@ import type { RequestHandler } from "./$types";
 import Groq from "groq-sdk";
 import "dotenv/config";
 import Valkey from "ioredis";
+import type { ChatCompletionMessageParam } from "groq-sdk/resources/chat/index.mjs";
 
 const AI_KEY = process.env.GROQ_API_KEY;
 const DB_URI = process.env.DB_URI || "redis://localhost:6379";
@@ -76,7 +77,7 @@ async function ratelimit(userIP: string) {
 
 export const POST: RequestHandler = async ({ request, getClientAddress }) => {
   try {
-    let { question, debug } = await request.json();
+    let { question, debug, conversation }: { question: string; debug: boolean; conversation: { message: string; user: boolean }[] } = await request.json();
     let ip = getClientAddress();
 
     if (await ratelimit(ip)) {
@@ -96,16 +97,28 @@ export const POST: RequestHandler = async ({ request, getClientAddress }) => {
       apiKey: AI_KEY,
     });
 
+    let extraMessages: ChatCompletionMessageParam[] = [];
+
+    if (conversation) {
+      extraMessages = conversation.map(({ message, user }) => {
+        return {
+          role: user ? "user" : "assistant",
+          content: message,
+        };
+      });
+    }
+
     let result = await groq.chat.completions.create({
       messages: [
         {
           role: "system",
           content: AI_PROMPT,
         },
+        ...extraMessages,
         {
           role: "user",
           content: question,
-        },
+        }
       ],
       model: AI_MODEL,
       temperature: 0.5,
