@@ -94,7 +94,7 @@ const AI_MODEL = "llama-3.3-70b-versatile";
 
 async function ratelimit(userIP: string) {
   // Use Redis/Valkey DB to ratelimit
-  const REQUESTS_PER_MINUTE = 12;
+  const REQUESTS_PER_MINUTE = 8;
   const ratelimitdb = new Valkey(DB_URI);
 
   let limitKey = await ratelimitdb.set(
