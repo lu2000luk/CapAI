@@ -90,9 +90,11 @@ A: Chat is this guy crazy?
 
 const AI_MODEL = "llama-3.1-70b-versatile";
 
-// BROKEN RATELIMIT FUNCTION
-
 async function ratelimit(userIP: string) {
+  if (process.env.DISABLE_RATELIMITER) {
+    return false;
+  }
+
   // Use Redis/Valkey DB to ratelimit
   const REQUESTS_PER_MINUTE = 10;
   const ratelimitdb = new Valkey(DB_URI);
