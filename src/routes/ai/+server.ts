@@ -88,7 +88,7 @@ Q: I am eating raw ramen.
 A: Chat is this guy crazy?
 `;
 
-const AI_MODEL = "llama-3.1-70b-versatile";
+const AI_MODEL = "llama3-70b-8192";
 
 async function ratelimit(userIP: string) {
   if (process.env.DISABLE_RATELIMITER) {
